@@ -1,0 +1,36 @@
+services:
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    restart: always
+
+  database:
+    image: mongo
+    ports:
+      - "27017:27017"
+    restart: always
+
+  api:
+    build: ./api
+    ports:
+      - "3000:3000"
+    environment:
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+      DATABASE_URL: mongodb://database:27017/activity_db
+    depends_on:
+      - rabbitmq
+      - database
+    restart: always
+
+  consumer:
+    build: ./consumer
+    environment:
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+      DATABASE_URL: mongodb://database:27017/activity_db
+    depends_on:
+      - rabbitmq
+      - database
+    restart: always
